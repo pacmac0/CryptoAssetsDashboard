@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect, make_response, session, escape, url_for
+from flask import Flask, render_template, request, redirect, make_response, session, escape, url_for, jsonify
 import os
 from werkzeug.utils import secure_filename
+import caller
 
 app = Flask(__name__)
 app.secret_key = '\n/\xf5\xe4\x1a\x9e\x86V\xb9\xd6\xadl\xb5f8\xe1\xdb\xc5G\x05\xfa\xd5\xdf\xee'
@@ -113,6 +114,12 @@ def upload():
             return redirect(request.url)
 
     return render_template('upload.html')
+
+
+@app.route("/initalDataload", methods=['GET', 'POST'])
+def initalDataload():
+    payload = caller.crypto_data_call()
+    return payload
 
 
 @app.route("/logout")
