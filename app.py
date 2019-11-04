@@ -1,11 +1,14 @@
 from flask import Flask, render_template, request, redirect, make_response, session, escape, url_for, jsonify
 import os
 from werkzeug.utils import secure_filename
-import caller
+import caller, database
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.secret_key = '\n/\xf5\xe4\x1a\x9e\x86V\xb9\xd6\xadl\xb5f8\xe1\xdb\xc5G\x05\xfa\xd5\xdf\xee'
+app.config['secret_key'] = '\n/\xf5\xe4\x1a\x9e\x86V\xb9\xd6\xadl\xb5f8\xe1\xdb\xc5G\x05\xfa\xd5\xdf\xee'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 
+db = SQLAlchemy(app)
 
 @app.route("/", methods=['GET'])
 def serve_login():
@@ -116,8 +119,8 @@ def upload():
     return render_template('upload.html')
 
 
-@app.route("/initalDataload", methods=['GET', 'POST'])
-def initalDataload():
+@app.route("/dataload", methods=['GET', 'POST'])
+def dataload():
     payload = caller.crypto_data_call()
     return payload
 
@@ -129,4 +132,7 @@ def logout():
 
 
 if __name__ == '__main__':
+
+
     app.run(port=1337, debug=True)  # TODO: turn off debug before deployment!!!!
+
