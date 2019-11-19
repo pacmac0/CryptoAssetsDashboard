@@ -1,6 +1,8 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
-from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, FloatField
+from wtforms.validators import DataRequired, Length, Email, EqualTo, NumberRange, AnyOf, ValidationError
+from wtforms.widgets.html5 import NumberInput
+
 from cryptodashboard.models import User
 
 
@@ -29,3 +31,12 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     remember = BooleanField('Remember me')
     submit = SubmitField('Login')
+
+
+coinChoices = [('btc', 'Bitcoin(BTC)'), ('eth', 'Ethereum(ETH)'), ('iota', 'IOTA(MIOTA)'), ('xrp', 'Ripple(XRP)'), ('bch', 'Bitcoin Cash(BCH)'), ('usdt', 'Tether(USDT)')]
+class changeAssetsForm(FlaskForm):
+    type = SelectField('Coin', choices=coinChoices, validators=[DataRequired(), AnyOf([coin[0] for coin in coinChoices])]) #change here for supported coins
+    action = SelectField('Action', choices=[('buy', 'bought'), ('sell', 'sold')], validators=[DataRequired(), AnyOf(['buy', 'sell'])])
+    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0)], default=0.0)
+    submit = SubmitField('Create')
+

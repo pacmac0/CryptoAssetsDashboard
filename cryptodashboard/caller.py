@@ -7,7 +7,7 @@ def crypto_data_call():
     url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?sort=market_cap'
     parameters = {
         'start': '1',
-        'limit': '20',
+        'limit': '100',
         'convert': 'USD'
     }
     headers = {
@@ -21,10 +21,6 @@ def crypto_data_call():
         # load from call
         response = session.get(url, params=parameters)
         table_data = json.loads(response.text)
-
-        # load from file
-        #with open('data.json', 'r') as file:
-        #    data = json.load(file)
 
         # Write to jsonfile
         with open('cryptodashboard/uploads/table_data.json', 'w+', encoding='utf-8') as outfile:

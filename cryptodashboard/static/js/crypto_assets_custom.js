@@ -7,7 +7,7 @@ function generate_table(table_data) {
   var tblFoot = document.createElement("tfoot");
   var tblBody = document.createElement("tbody");
   //create header and footer
-  var headers = ['#', 'Name', 'Market-Cap.', 'Circulation-Supply', 'Volume.(24h)', 'Price $', 'Change(24h)', 'Change(7d)']
+  var headers = ['#', 'Name', 'Price $', 'Change(24h)', 'Change(7d)', 'Market-Cap.', 'Circulation-Supply', 'Volume.(24h)']
   var headRow = document.createElement("tr");
   for (var head in headers) {
     var cell = document.createElement("th");
@@ -23,46 +23,53 @@ function generate_table(table_data) {
   for (var coin in table_data) { // coin is the key which is numeric and ordered from 0 up
       // creates a table row
       var row = document.createElement("tr");
-      //create table rows
+      //create table rows (change case number for order of cells)
       for (var j = 0; j < 8; j++) {
           // path in data ['quote.USD.price', 'quote.USD.percent_change_24h', 'quote.USD.percent_change_7d'];
           var text = "";
           switch (j) {
               case 0:
-                text = "#" + (parseInt(coin) + 1).toString();
+                text = (parseInt(coin) + 1).toString();
                 break;
               case 1:
                 text = table_data[coin].name;
                 break;
-              case 2:
-                text = table_data[coin].quote.USD.market_cap;
-                break;
-              case 3:
-                text = table_data[coin].circulating_supply;
-                break;
-              case 4:
-                text = table_data[coin].quote.USD.volume_24h;
-                break;
               case 5:
-                text = table_data[coin].quote.USD.price;
+                text = convertNumberStr(table_data[coin].quote.USD.market_cap);
                 break;
               case 6:
-                text = table_data[coin].quote.USD.percent_change_24h;
+                text = convertNumberStr(table_data[coin].circulating_supply);
                 break;
               case 7:
-                text = table_data[coin].quote.USD.percent_change_7d;
+                text = convertNumberStr(table_data[coin].quote.USD.volume_24h);
+                break;
+              case 2:
+                text = '$'.concat(convertNumberStr(table_data[coin].quote.USD.price));
+                break;
+              case 3:
+                text = convertNumberStr(table_data[coin].quote.USD.percent_change_24h);
+                if(!text.includes('-')) {
+                    text = '+'.concat(text)
+                }
+                break;
+              case 4:
+                text = convertNumberStr(table_data[coin].quote.USD.percent_change_7d);
+                if(!text.includes('-')) {
+                    text = '+'.concat(text)
+                }
                 break;
               default:
                 text = "No value found!";
           }
 
-          // convert numbers
-          if (!isNaN(text)) {
-              text = convertNumberStr(text);
-          }
-
           cell = document.createElement("td");
           cellText = document.createTextNode(text);
+          if(text.toString().includes('-')) {
+            cell.style.color = "#D94040";
+          }
+          else if(text.toString().includes('+')) {
+            cell.style.color = "#00AABB";
+          }
           cell.appendChild(cellText);
           row.appendChild(cell);
       }
@@ -92,6 +99,25 @@ function tableLoad() {
     };
     request.open("GET", 'http://127.0.0.1:1337/dataload', true);
     request.send();
+    return false
+}
+
+function deleteAsset(asset) {
+    var assetArgs = asset.substring(6, asset.length-1).split(', ');
+    assetArgs.forEach(function(arg, idx, assetArgs){
+        assetArgs[idx] = arg.substring(1, arg.length-1);
+        //alert(arg.substring(1, arg.length-1) + '\n' + arg)
+    });
+
+    var request = new XMLHttpRequest();
+    request.open("POST", 'http://127.0.0.1:1337/asset/delete', true);
+    request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    request.send(assetArgs[0]); // send asset-id
+
+    document.getElementById('assetHistNo'+assetArgs[0]).remove();
+    var sum = document.getElementById('assetSum').textContent;
+    document.getElementById('assetSum').textContent = parseFloat(sum) - parseFloat(assetArgs[2]);
+    return false
 }
 
 // onload start!!!
