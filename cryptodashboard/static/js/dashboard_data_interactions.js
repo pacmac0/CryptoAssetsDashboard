@@ -1,4 +1,7 @@
-function generate_table(table_data) {
+var table_data = [];
+var user_assets = [];
+
+function generate_table() {
   // get the reference for the body
   var tbl = document.getElementById("dataTable");
 
@@ -92,12 +95,26 @@ function convertNumberStr(text) {
 function tableLoad() {
     var request = new XMLHttpRequest();
     request.onreadystatechange = function() {
-      if (this.readyState == 4 && this.status == 200) {
-          var table_data = JSON.parse(this.responseText);
-          generate_table(table_data['data']);
+        if (this.readyState == 4 && this.status == 200) {
+          var data = JSON.parse(this.responseText);
+          table_data = data['data'];
+          generate_table();
       }
     };
     request.open("GET", 'http://127.0.0.1:1337/dataload', true);
+    request.send();
+    return false
+}
+
+
+function getAssetsOfUser() {
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+          user_assets = JSON.parse(this.responseText);
+      }
+    };
+    request.open("GET", 'http://127.0.0.1:1337/assetload_by_user', true);
     request.send();
     return false
 }
@@ -120,9 +137,71 @@ function deleteAsset(asset) {
     return false
 }
 
+function createPortfolioPieChart() {
+    var ctx = document.getElementById("portfolioPieChart");
+    var portfolioPieChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ["Direct", "Referral", "Social"],
+        datasets: [{
+          data: [55, 30, 15],
+          backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
+          hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
+          hoverBorderColor: "rgba(234, 236, 244, 1)",
+        }],
+      },
+      options: {
+        maintainAspectRatio: false,
+        tooltips: {
+          backgroundColor: "rgb(255,255,255)",
+          bodyFontColor: "#858796",
+          borderColor: '#dddfeb',
+          borderWidth: 1,
+          xPadding: 15,
+          yPadding: 15,
+          displayColors: false,
+          caretPadding: 10,
+        },
+        legend: {
+          display: false
+        },
+        cutoutPercentage: 75,
+      },
+    });
+}
+
+function assetPopUpDisplay() {
+    //TODO use this function which gets called with the asset button to generate the asset table, plus event listener for coin type field to reload table
+}
+
+// Set new default font family and font color to mimic Bootstrap's default styling
+Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+Chart.defaults.global.defaultFontColor = '#858796';
 // onload start!!!
 $(document).ready(function() {
-    tableLoad()
+
+
+    tableLoad();
+    getAssetsOfUser();
+     // maybe use async wait to create table after data got loaded-------------------
+
+    // setTimeout(function(){ alert(table_data[1].name); }, 2000);
+
+
+    // compute chart values from assets
+    // Asset('9ca64354-0a21-11ea-9342-408d5cffb2b2', 'btc', '0.02', '6f622346-086d-11ea-b150-408d5cffb2b2', '2019-11-18 17:36:46.657184')
+    /*
+    var labels = [];
+    var data_percentages = [];
+    assets.forEach(function(asset, idx, assetArgs){
+        if(!labels.includes(asset.type)) {
+          labels.push(asset.type)
+        }
+        //TODO get current value of assets to get share of portfolio
+    });
+    */
+
+    // TODO redo asset table in pop up in js to show assets specific for the coin type
 });
 
 

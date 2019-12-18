@@ -34,15 +34,17 @@ class Asset(db.Model):
     id = db.Column(db.String(40), primary_key=True)
     type = db.Column(db.String(50), nullable=False)
     amount = db.Column(db.Float, nullable=False)
+    price = db.Column(db.Float, nullable=False)
     date_added = db.Column(db.DateTime, nullable=False, default=datetime.now)
     owner_id = db.Column(db.String(40), db.ForeignKey('user.id'), nullable=False)
 
     def __repr__(self):
         return f"Asset('{self.id}', '{self.type}', '{self.amount}', '{self.owner_id}', '{self.date_added}')"
 
-    def __init__(self, id, type, amount, owner_id, date_added=None):
+    def __init__(self, id, type, amount, price, owner_id, date_added=None):
         self.id = id
         self.type = type
         self.amount = amount
+        self.price = price
         self.owner_id = owner_id
         self.date_added = date_added

@@ -14,6 +14,7 @@
   <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
   <!-- Custom styles for this template-->
   <link href="static/css/sb-admin-2.min.css" rel="stylesheet">
+
 </head>
 
 <body id="page-top">
@@ -38,7 +39,7 @@
       </li>
       <hr class="sidebar-divider d-none d-md-block">
       <li class="text-center d-none d-md-inline mb-2">
-        <a class="btn btn-info btn-icon-split" href="#" data-toggle="modal" data-target="#newAssetModal">
+        <a class="btn btn-info btn-icon-split" href="" data-toggle="modal" data-target="#newAssetModal" onclick="assetPopUpDisplay()">
               <span class="icon text-white-50">
                 <i class="fas fa-plus"></i>
               </span>
@@ -177,7 +178,7 @@
                 <!-- Card Body -->
                 <div class="card-body">
                   <div class="chart-pie pt-4 pb-2">
-                    <canvas id="myPieChart"></canvas>
+                    <canvas id="portfolioPieChart"></canvas>
                   </div>
                   <div class="mt-4 text-center small">
                     <span class="mr-2">
@@ -278,8 +279,8 @@
   </a>
 
   <!-- New Asset Pop-up -->
-    <div class="modal fade" id="newAssetModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal fade" id="newAssetModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-xl modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Add new Asset:</h5>
@@ -292,20 +293,6 @@
         <form method="POST" action="/asset/new">
         {{ form.hidden_tag() }}
         <fieldset class="form-group">
-
-          <div class="form-group">
-            {{ form.type.label(class="form-control-label") }}
-            {% if form.type.errors %}
-              {{ form.type(class="form-control form-control-lg is-invalid") }}
-              <div class="invalid-feedback">
-                  {% for error in form.type.errors %}
-                      <span>{{ error }}</span>
-                  {% endfor %}
-              </div>
-            {% else %}
-              {{ form.type(class="form-control form-control-user") }}
-            {% endif %}
-          </div>
           <div class="form-group row">
             <div class="col-lg-6">
               {{ form.action.label(class="form-control-label") }}
@@ -321,6 +308,21 @@
               {% endif %}
             </div>
             <div class="col-lg-6">
+              {{ form.type.label(class="form-control-label") }}
+              {% if form.type.errors %}
+                {{ form.type(class="form-control form-control-lg is-invalid") }}
+                <div class="invalid-feedback">
+                    {% for error in form.type.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+              {% else %}
+                {{ form.type(class="form-control form-control-user") }}
+              {% endif %}
+            </div>
+          </div>
+          <div class="form-group row">
+            <div class="col-lg-6">
               {{ form.amount.label(class="form-control-label") }}
               {% if form.amount.errors %}
                 {{ form.amount(class="form-control form-control-lg is-invalid") }}
@@ -331,6 +333,19 @@
                 </div>
               {% else %}
                 {{ form.amount(class="form-control form-control-user") }}
+              {% endif %}
+            </div>
+            <div class="col-lg-6">
+              {{ form.price.label(class="form-control-label") }}
+              {% if form.price.errors %}
+                {{ form.price(class="form-control form-control-lg is-invalid") }}
+                <div class="invalid-feedback">
+                    {% for error in form.price.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+              {% else %}
+                {{ form.price(class="form-control form-control-user") }}
               {% endif %}
             </div>
           </div>
@@ -347,6 +362,7 @@
                   <tr>
                     <th>#</th>
                     <th>Amount</th>
+                    <th>Price $</th>
                     <th>Date</th>
                     <th>Actions</th>
                   </tr>
@@ -354,12 +370,14 @@
                 <tr>
                   <td> Summed </td>
                   <td id="assetSum">{{ assets | sum(attribute='amount') }}</td>
+                  <td></td>
                   <td>Today</td>
                 </tr>
                 {% for asset in assets | sort(attribute='date_added') | reverse %}
                   <tr id="assetHistNo{{asset.id}}">
                     <td> {{ loop.index }} </td>
                     <td> {{ asset.amount }} </td>
+                    <td> {{ asset.price }} </td>
                     <td> {{ asset.date_added.isoformat(' ', 'seconds') }} </td>
                     <td>
                       <button value ="{{ asset }}" onclick=deleteAsset(this.value) href="" class="btn btn-primary btn-icon-split">
@@ -414,11 +432,7 @@
   <script src="static/vendor/datatables/dataTables.bootstrap4.min.js"></script>
 
   <!-- Page level custom scripts -->
-  <script src="static/js/crypto_assets_custom.js"></script>
-
-  <script src="static/js/demo/datatables-demo.js"></script>
-  <script src="static/js/demo/chart-area-demo.js"></script>
-  <script src="static/js/demo/chart-pie-demo.js"></script>
+  <script src="static/js/dashboard_data_interactions.js"></script>
 
 </body>
 

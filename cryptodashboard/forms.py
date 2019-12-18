@@ -38,5 +38,6 @@ class changeAssetsForm(FlaskForm):
     type = SelectField('Coin', choices=coinChoices, validators=[DataRequired(), AnyOf([coin[0] for coin in coinChoices])]) #change here for supported coins
     action = SelectField('Action', choices=[('buy', 'bought'), ('sell', 'sold')], validators=[DataRequired(), AnyOf(['buy', 'sell'])])
     amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0)], default=0.0)
+    price = FloatField('Price in $', validators=[DataRequired(), NumberRange(min=0)], default=0.0)
     submit = SubmitField('Create')
 

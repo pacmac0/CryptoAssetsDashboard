@@ -1,10 +1,11 @@
-from flask import render_template, request, redirect, url_for, flash, make_response
+from flask import render_template, request, redirect, url_for, flash, jsonify
 from cryptodashboard import caller
 from cryptodashboard.forms import RegistrationForm, LoginForm, changeAssetsForm
 from cryptodashboard import app, db, bcrypt
 from cryptodashboard.models import User, Asset
 from flask_login import login_user, current_user, logout_user, login_required
 import uuid
+
 
 @app.route("/", methods=['GET'])
 @app.route("/login", methods=['GET', 'POST'])
@@ -47,7 +48,8 @@ def register():
 @app.route("/dashboard", methods=['GET'])
 @login_required
 def dashboard():
-    return render_template('dashboard.html', user=current_user, coindata=dataload(), form=changeAssetsForm(), assets=assetload_by_user())
+    return render_template('dashboard.html', user=current_user, coindata=dataload(), form=changeAssetsForm(),
+                           assets=Asset.query.filter(Asset.owner_id == current_user.id).all())
 
 
 @app.route("/dataload", methods=['GET'])
@@ -57,8 +59,15 @@ def dataload():
     return payload
 
 
+@app.route("/assetload_by_user", methods=['GET'])
+@login_required
 def assetload_by_user():
-    return Asset.query.filter(Asset.owner_id == current_user.id).all()
+    assetDict = {}
+    for index, asset in enumerate(Asset.query.filter(Asset.owner_id == current_user.id).all()):
+        assetAsDict = asset.__dict__
+        assetAsDict.pop('_sa_instance_state')
+        assetDict[index+1] = assetAsDict
+    return(assetDict)
 
 
 @app.route("/logout")
@@ -73,15 +82,16 @@ def new_asset():
     form = changeAssetsForm()
     if form.validate_on_submit():
         if form.action.data == 'buy':
-            db.session.add(Asset(str(uuid.uuid1()), form.type.data, form.amount.data, current_user.id))
+            db.session.add(Asset(str(uuid.uuid1()), form.type.data, form.amount.data, form.price.data, current_user.id))
             db.session.commit()
         if form.action.data == 'sell':
-            db.session.add(Asset(str(uuid.uuid1()), form.type.data, form.amount.data*(-1), current_user.id))
+            db.session.add(Asset(str(uuid.uuid1()), form.type.data, form.amount.data * (-1), form.price.data, current_user.id))
             db.session.commit()
         flash(f'Your Asset got added successfully!', 'success')
     else:
         flash(f'Your Asset could not be added, please try again and control your input!', 'danger')
     return redirect(request.referrer)
+
 
 @app.route("/asset/delete", methods=['POST'])
 @login_required
@@ -90,5 +100,4 @@ def delete_asset():
     if Asset.query.filter_by(id=request.get_data().decode()).first():
         db.session.delete(Asset.query.filter_by(id=request.get_data().decode()).first_or_404())
         db.session.commit()
-        print('Asset created')
     return redirect(url_for('dashboard'))
