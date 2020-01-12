@@ -8,52 +8,49 @@ function getCoinData() {
             coin_data = res.data.data;
         })
         .catch(err => console.error(err));
-
 }
 
 function getUserAssets() {
-    axios.get('http://127.0.0.1:1337/assetload_by_user')
+    return axios.get('http://127.0.0.1:1337/assetload_by_user')
         .then(res => {
             user_assets = res.data;
         })
         .catch(err => console.error(err));
-
-
-
-
 }
 
 async function generate_coin_table() {
+    // get data
   await getCoinData();
   let table_data = coin_data;
+
   // get the reference for the body
-  var tbl = document.getElementById("dataTable");
+  let tbl = document.getElementById("dataTable");
 
   // creates all table elements
-  var tblHead = document.createElement("thead");
-  var tblFoot = document.createElement("tfoot");
-  var tblBody = document.createElement("tbody");
+  let tblHead = document.createElement("thead");
+  let tblFoot = document.createElement("tfoot");
+  let tblBody = document.createElement("tbody");
   //create header and footer
-  var headers = ['#', 'Name', 'Price $', 'Change(24h)', 'Change(7d)', 'Market-Cap.', 'Circulation-Supply', 'Volume.(24h)']
-  var headRow = document.createElement("tr");
-  for (var head in headers) {
-    var cell = document.createElement("th");
-    var cellText = document.createTextNode(headers[head]);
+  let headers = ['#', 'Name', 'Price $', 'Change(24h)', 'Change(7d)', 'Market-Cap.', 'Circulation-Supply', 'Volume.(24h)']
+  let headRow = document.createElement("tr");
+  for (let head in headers) {
+    let cell = document.createElement("th");
+    let cellText = document.createTextNode(headers[head]);
     cell.appendChild(cellText);
     headRow.appendChild(cell);
   }
-  var footRow = headRow.cloneNode(true);
+  let footRow = headRow.cloneNode(true);
   tblHead.appendChild(headRow);
   tblFoot.appendChild(footRow);
 
   // creating table body cells
-  for (var coin in table_data) { // coin is the key which is numeric and ordered from 0 up
+  for (let coin in table_data) { // coin is the key which is numeric and ordered from 0 up
       // creates a table row
-      var row = document.createElement("tr");
+      let row = document.createElement("tr");
       //create table rows (change case number for order of cells)
-      for (var j = 0; j < 8; j++) {
+      for (let j = 0; j < 8; j++) {
           // path in data ['quote.USD.price', 'quote.USD.percent_change_24h', 'quote.USD.percent_change_7d'];
-          var text = "";
+          let text = "";
           switch (j) {
               case 0:
                 text = (parseInt(coin) + 1).toString();
@@ -109,30 +106,24 @@ async function generate_coin_table() {
 
 // converts a String(number) from . to , notation
 function convertNumberStr(text) {
-    var str = parseFloat(text).toFixed(2).replace('.', ',').split("").reverse().join("").match(/.{1,3}/g);
-    var convStr = str[0] + str[1];
-    for(var i=2; i<str.length; i++) {
+    let str = parseFloat(text).toFixed(2).replace('.', ',').split("").reverse().join("").match(/.{1,3}/g);
+    let convStr = str[0] + str[1];
+    for(let i=2; i<str.length; i++) {
         convStr = convStr + "." + str[i]
     }
     return convStr.split("").reverse().join("");
 }
 
-function deleteAsset(asset) {
-    var assetArgs = asset.substring(6, asset.length-1).split(', ');
-    assetArgs.forEach(function(arg, idx, assetArgs){
-        assetArgs[idx] = arg.substring(1, arg.length-1);
-        //alert(arg.substring(1, arg.length-1) + '\n' + arg)
-    });
-
-    var request = new XMLHttpRequest();
-    request.open("POST", 'http://127.0.0.1:1337/asset/delete', true);
-    request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-    request.send(assetArgs[0]); // send asset-id
-
-    document.getElementById('assetHistNo'+assetArgs[0]).remove();
-    var sum = document.getElementById('assetSum').textContent;
-    document.getElementById('assetSum').textContent = parseFloat(sum) - parseFloat(assetArgs[2]);
-    return false
+function deleteAsset(assetId) {
+    axios.post('http://127.0.0.1:1337/asset/delete', {assetId})
+        .then(res => {
+            // update asset sum
+            let sumCell = document.getElementById('sumCell');
+            let assetRow = document.getElementById(assetId);
+            sumCell.innerHTML = (parseFloat(sumCell.innerHTML) - parseFloat(assetRow.children[1].innerHTML)).toString();
+            assetRow.parentNode.removeChild(assetRow);
+        })
+        .catch(err => console.error(err));
 }
 
 function createPortfolioPieChart() {
@@ -140,8 +131,8 @@ function createPortfolioPieChart() {
     Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
     Chart.defaults.global.defaultFontColor = '#858796';
 
-    var ctx = document.getElementById("portfolioPieChart");
-    var portfolioPieChart = new Chart(ctx, {
+    let ctx = document.getElementById("portfolioPieChart");
+    let portfolioPieChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
         labels: ["Direct", "Referral", "Social"],
@@ -172,21 +163,150 @@ function createPortfolioPieChart() {
     });
 }
 
-function assetPopUpDisplay() {
-    //TODO use this function which gets called with the asset button to generate the asset table, plus event listener for coin type field to reload table
+async function generate_assets_table() {
+    // get data to array
+    await getUserAssets();
+    let table_data = user_assets;
+    table_data = Object.assign([], table_data).reverse();
+
+    // get the reference for the body
+    let tbl = document.getElementById("assetTable");
+
+    // create listener for list filter by coin type
+    let coinTypeSelect = document.getElementById("type");
+    coinTypeSelect.addEventListener("change", function updateAssetList() {
+        let choosenType = document.getElementById("type").value;
+        let tableRows = tbl.querySelectorAll('tr');
+        // filter by type
+        let rowCount = 1;
+        tableRows.forEach(tr => {
+            let rowAssetType = tr.getAttribute('value');
+
+            if(rowAssetType === choosenType || rowAssetType === 'assetTableHead') {
+                tr.hidden = false;
+                if(rowAssetType === choosenType) {
+                    tr.children[0].innerHTML = (rowCount).toString();
+                    rowCount++;
+                }
+            }
+            else {
+                row.hidden = true;
+            }
+
+            tr.hidden = !(rowAssetType === choosenType || rowAssetType === 'assetTableHead');
+        });
+        // recalculate sum od assets
+        let sum = 0;
+        table_data.forEach(function(asset, i) {
+            if (asset.type == choosenType) {
+                sum = sum + asset.amount;
+            }
+        });
+        document.getElementById('sumCell').innerHTML = sum;
+    });
+
+    // creates all table elements
+    let tblHead = document.createElement("thead");
+    let tblBody = document.createElement("tbody");
+
+    //create header
+    let headers = ['#', 'Amount', 'Price $', 'Date/ Time', 'Actions'];
+    let headRow = document.createElement("tr");
+        headRow.setAttribute('value', 'assetTableHead');
+    headers.forEach(function(colHead, i) {
+        let cell = document.createElement("th");
+        let cellText = document.createTextNode(colHead);
+        cell.appendChild(cellText);
+        headRow.appendChild(cell);
+    });
+    tblHead.appendChild(headRow);
+
+    // create the summary row
+    let row = document.createElement("tr")
+        row.setAttribute('value', 'assetTableHead');
+    headers.forEach(function(colHead, i) {
+        cell = document.createElement("td");
+        switch(i) {
+            case 0:
+                cellText = document.createTextNode('Summed');
+                break;
+            case 1:
+                cell.setAttribute('id', 'sumCell');
+                let su = 0;
+                table_data.forEach(function(asset, i) {
+                    if (asset.type == 'btc') {
+                        su = su + asset.amount;
+                    }
+                });
+                cellText = document.createTextNode(su);
+                break;
+            case 3:
+                cellText = document.createTextNode('Today');
+                break;
+            default:
+                cellText = document.createTextNode('');
+        }
+        cell.appendChild(cellText);
+        row.appendChild(cell);
+    });
+    tblBody.appendChild(row);
+
+// creating table body cells
+    let btcCount = 1;
+    table_data.forEach(function (asset, i) { // asset is the key which is numeric and ordered from 0 up
+      //create table rows
+      row = document.createElement("tr");
+      row.setAttribute('value', asset.type);
+      row.setAttribute('id', asset.id);
+      for (let j = 0; j < 5; j++) {
+          cell = document.createElement("td");
+          let text = "";
+          switch (j) {
+              case 1:
+                text = asset.amount;
+                var cellEntry = document.createTextNode(text);
+                break;
+              case 2:
+                text = asset.price;
+                var cellEntry = document.createTextNode(text);
+                break;
+              case 3:
+                text = asset.date_added;
+                var cellEntry = document.createTextNode(text);
+                break;
+              case 4:
+                let delBtn = document.getElementById("assetDelBtn").cloneNode(true);
+                delBtn.onclick = function() {deleteAsset(asset.id)};
+                cellEntry = delBtn;
+                break;
+              default:
+                text = "No value found!";
+                var cellEntry = document.createTextNode(text);
+          }
+          cell.appendChild(cellEntry);
+          row.appendChild(cell);
+      }
+      if(row.getAttribute('value') === document.getElementById("type").value) {
+        row.hidden = false;
+        row.children[0].innerHTML = (btcCount).toString();
+        btcCount++;
+      }
+      else {
+          row.hidden = true;
+      }
+      tblBody.appendChild(row)
+    });
+
+    // append header and body to table element
+    tbl.appendChild(tblHead);
+    tbl.appendChild(tblBody);
 }
 
-function generate_assets_table() {
-
-}
 
 // onload start!!!
 $(document).ready(function() {
     generate_coin_table();
     generate_assets_table();
-
-    // TODO redo asset table to be changeable over js, show assets specific for the chosen coin type! (have a look at eventlistener für den cointype)
-
 });
 
 

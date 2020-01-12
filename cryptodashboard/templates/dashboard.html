@@ -39,7 +39,7 @@
         </li>
         <hr class="sidebar-divider d-none d-md-block">
         <li class="text-center d-none d-md-inline mb-2">
-            <a class="btn btn-info btn-icon-split" href="" data-toggle="modal" data-target="#newAssetModal" onclick="assetPopUpDisplay()">
+            <a class="btn btn-info btn-icon-split" href="" data-toggle="modal" data-target="#newAssetModal">
               <span class="icon text-white-50">
                 <i class="fas fa-plus"></i>
               </span>
@@ -318,39 +318,7 @@
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-bordered" id="assetTable" width="100%" cellspacing="0">
-                            <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Amount</th>
-                                <th>Price $</th>
-                                <th>Date</th>
-                                <th>Actions</th>
-                            </tr>
-                            </thead>
-                            <tr>
-                                <td> Summed </td>
-                                <td id="assetSum">{{ assets | sum(attribute='amount') }}</td>
-                                <td></td>
-                                <td>Today</td>
-                            </tr>
-
-                            {% for asset in assets | sort(attribute='date_added') | reverse %}
-                            <tr id="assetHistNo{{asset.id}}">
-                                <td> {{ loop.index }} </td>
-                                <td> {{ asset.amount }} </td>
-                                <td> {{ asset.price }} </td>
-                                <td> {{ asset.date_added.isoformat(' ', 'seconds') }} </td>
-                                <td>
-                                    <button value ="{{ asset }}" onclick=deleteAsset(this.value) href="" class="btn btn-primary btn-icon-split">
-                        <span class="icon">
-                          <i class="fas fa-trash-alt"></i>
-                        </span>
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-
-
+                            <!-- gets generated -->
                         </table>
                     </div>
                 </div>
@@ -358,6 +326,15 @@
             </div>
         </div>
     </div>
+
+    <!-- delete button -->
+    <button href="" class="btn btn-primary btn-icon-split" id="assetDelBtn">
+        <span class="icon">
+            <i class="fas fa-trash-alt"></i>
+        </span>
+    </button>
+
+
 </div>
 
 <!-- Logout Modal-->

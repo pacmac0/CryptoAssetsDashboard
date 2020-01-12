@@ -4,6 +4,7 @@ from cryptodashboard.forms import RegistrationForm, LoginForm, changeAssetsForm
 from cryptodashboard import app, db, bcrypt
 from cryptodashboard.models import User, Asset
 from flask_login import login_user, current_user, logout_user, login_required
+from ast import literal_eval
 import uuid
 
 
@@ -97,7 +98,8 @@ def new_asset():
 @login_required
 def delete_asset():
     # asset id in request data
-    if Asset.query.filter_by(id=request.get_data().decode()).first():
-        db.session.delete(Asset.query.filter_by(id=request.get_data().decode()).first_or_404())
+    id = literal_eval(request.get_data().decode())['assetId']
+    if Asset.query.filter_by(id=id).first():
+        db.session.delete(Asset.query.filter_by(id=id).first_or_404())
         db.session.commit()
-    return redirect(url_for('dashboard'))
+    return {}
