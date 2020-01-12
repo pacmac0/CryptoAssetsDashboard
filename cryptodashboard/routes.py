@@ -67,7 +67,7 @@ def assetload_by_user():
         assetAsDict = asset.__dict__
         assetAsDict.pop('_sa_instance_state')
         assetDict[index+1] = assetAsDict
-    return(assetDict)
+    return(jsonify(assetDict))
 
 
 @app.route("/logout")

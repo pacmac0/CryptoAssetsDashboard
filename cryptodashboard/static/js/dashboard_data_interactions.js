@@ -1,7 +1,31 @@
-var table_data = [];
-var user_assets = [];
+// global shared data
+let coin_data = new Object();
+let user_assets = new Object();
 
-function generate_table() {
+function getCoinData() {
+    return axios.get('http://127.0.0.1:1337/dataload')
+        .then(res => {
+            coin_data = res.data.data;
+        })
+        .catch(err => console.error(err));
+
+}
+
+function getUserAssets() {
+    axios.get('http://127.0.0.1:1337/assetload_by_user')
+        .then(res => {
+            user_assets = res.data;
+        })
+        .catch(err => console.error(err));
+
+
+
+
+}
+
+async function generate_coin_table() {
+  await getCoinData();
+  let table_data = coin_data;
   // get the reference for the body
   var tbl = document.getElementById("dataTable");
 
@@ -50,13 +74,13 @@ function generate_table() {
                 text = '$'.concat(convertNumberStr(table_data[coin].quote.USD.price));
                 break;
               case 3:
-                text = convertNumberStr(table_data[coin].quote.USD.percent_change_24h);
+                text = convertNumberStr(table_data[coin].quote.USD.percent_change_24h).concat(" %");
                 if(!text.includes('-')) {
                     text = '+'.concat(text)
                 }
                 break;
               case 4:
-                text = convertNumberStr(table_data[coin].quote.USD.percent_change_7d);
+                text = convertNumberStr(table_data[coin].quote.USD.percent_change_7d).concat(" %");
                 if(!text.includes('-')) {
                     text = '+'.concat(text)
                 }
@@ -83,6 +107,7 @@ function generate_table() {
   tbl.appendChild(tblBody);
 }
 
+// converts a String(number) from . to , notation
 function convertNumberStr(text) {
     var str = parseFloat(text).toFixed(2).replace('.', ',').split("").reverse().join("").match(/.{1,3}/g);
     var convStr = str[0] + str[1];
@@ -90,33 +115,6 @@ function convertNumberStr(text) {
         convStr = convStr + "." + str[i]
     }
     return convStr.split("").reverse().join("");
-}
-
-function tableLoad() {
-    var request = new XMLHttpRequest();
-    request.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-          var data = JSON.parse(this.responseText);
-          table_data = data['data'];
-          generate_table();
-      }
-    };
-    request.open("GET", 'http://127.0.0.1:1337/dataload', true);
-    request.send();
-    return false
-}
-
-
-function getAssetsOfUser() {
-    var request = new XMLHttpRequest();
-    request.onreadystatechange = function() {
-      if (this.readyState == 4 && this.status == 200) {
-          user_assets = JSON.parse(this.responseText);
-      }
-    };
-    request.open("GET", 'http://127.0.0.1:1337/assetload_by_user', true);
-    request.send();
-    return false
 }
 
 function deleteAsset(asset) {
@@ -138,6 +136,10 @@ function deleteAsset(asset) {
 }
 
 function createPortfolioPieChart() {
+    // Set new default font family and font color to mimic Bootstrap's default styling
+    Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+    Chart.defaults.global.defaultFontColor = '#858796';
+
     var ctx = document.getElementById("portfolioPieChart");
     var portfolioPieChart = new Chart(ctx, {
       type: 'doughnut',
@@ -174,34 +176,17 @@ function assetPopUpDisplay() {
     //TODO use this function which gets called with the asset button to generate the asset table, plus event listener for coin type field to reload table
 }
 
-// Set new default font family and font color to mimic Bootstrap's default styling
-Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
-Chart.defaults.global.defaultFontColor = '#858796';
+function generate_assets_table() {
+
+}
+
 // onload start!!!
 $(document).ready(function() {
+    generate_coin_table();
+    generate_assets_table();
 
+    // TODO redo asset table to be changeable over js, show assets specific for the chosen coin type! (have a look at eventlistener für den cointype)
 
-    tableLoad();
-    getAssetsOfUser();
-     // maybe use async wait to create table after data got loaded-------------------
-
-    // setTimeout(function(){ alert(table_data[1].name); }, 2000);
-
-
-    // compute chart values from assets
-    // Asset('9ca64354-0a21-11ea-9342-408d5cffb2b2', 'btc', '0.02', '6f622346-086d-11ea-b150-408d5cffb2b2', '2019-11-18 17:36:46.657184')
-    /*
-    var labels = [];
-    var data_percentages = [];
-    assets.forEach(function(asset, idx, assetArgs){
-        if(!labels.includes(asset.type)) {
-          labels.push(asset.type)
-        }
-        //TODO get current value of assets to get share of portfolio
-    });
-    */
-
-    // TODO redo asset table in pop up in js to show assets specific for the coin type
 });
 
 
