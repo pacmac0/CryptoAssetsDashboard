@@ -6,11 +6,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d8234956-fb34-476b-8e14-859c66befb95" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cryptodashboard/cryptoDashboard.db" beforeDir="false" afterPath="$PROJECT_DIR$/cryptodashboard/cryptoDashboard.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cryptodashboard/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/cryptodashboard/forms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cryptodashboard/static/js/dashboard_data_interactions.js" beforeDir="false" afterPath="$PROJECT_DIR$/cryptodashboard/static/js/dashboard_data_interactions.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cryptodashboard/templates/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/cryptodashboard/templates/dashboard.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cryptodashboard/uploads/table_data.json" beforeDir="false" afterPath="$PROJECT_DIR$/cryptodashboard/uploads/table_data.json" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -84,14 +81,14 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/cryptodashboard/static/js/dashboard_data_interactions.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="191">
-                  <caret line="357" column="23" selection-start-line="357" selection-start-column="23" selection-end-line="357" selection-end-column="23" />
+                <state relative-caret-position="233">
+                  <caret line="157" column="5" lean-forward="true" selection-start-line="157" selection-start-column="5" selection-end-line="157" selection-end-column="5" />
                   <folding>
                     <element signature="n#!!block;n#getCoinData#0" />
                     <element signature="n#!!block;n#getUserAssets#0" />
+                    <element signature="n#!!block;n#generate_coin_table#0" />
                     <element signature="n#!!block;n#convertNumberStr#0" />
                     <element signature="n#!!block;n#deleteAsset#0" />
-                    <element signature="n#!!block;n#createPortfolioPieChart#0" />
                     <element signature="n#!!block;n#generate_assets_table#0" />
                     <element signature="n#!!block;n#groupBy#0" />
                     <element signature="n#!!block;n#calcAssetTotalValues#0" />
@@ -124,7 +121,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>assets</find>
       <find>assetload_by_user</find>
       <find>chart</find>
       <find>piecha</find>
@@ -154,6 +150,7 @@
       <find>console.</find>
       <find>iota</find>
       <find>console.l</find>
+      <find>currency_total_summed</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -363,12 +360,12 @@
       <workItem from="1578826166686" duration="16915000" />
       <workItem from="1579173127413" duration="692000" />
       <workItem from="1579201573550" duration="7006000" />
-      <workItem from="1579254494860" duration="2634000" />
+      <workItem from="1579254494860" duration="4990000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="187965000" />
+    <option name="totallyTimeSpent" value="190321000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -648,27 +645,27 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/cryptodashboard/static/js/dashboard_data_interactions.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="191">
-          <caret line="357" column="23" selection-start-line="357" selection-start-column="23" selection-end-line="357" selection-end-column="23" />
-          <folding>
-            <element signature="n#!!block;n#getCoinData#0" />
-            <element signature="n#!!block;n#getUserAssets#0" />
-            <element signature="n#!!block;n#convertNumberStr#0" />
-            <element signature="n#!!block;n#deleteAsset#0" />
-            <element signature="n#!!block;n#createPortfolioPieChart#0" />
-            <element signature="n#!!block;n#generate_assets_table#0" />
-            <element signature="n#!!block;n#groupBy#0" />
-            <element signature="n#!!block;n#calcAssetTotalValues#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/cryptodashboard/templates/dashboard.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="273">
           <caret line="177" column="42" lean-forward="true" selection-start-line="177" selection-start-column="42" selection-end-line="177" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cryptodashboard/static/js/dashboard_data_interactions.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="233">
+          <caret line="157" column="5" lean-forward="true" selection-start-line="157" selection-start-column="5" selection-end-line="157" selection-end-column="5" />
+          <folding>
+            <element signature="n#!!block;n#getCoinData#0" />
+            <element signature="n#!!block;n#getUserAssets#0" />
+            <element signature="n#!!block;n#generate_coin_table#0" />
+            <element signature="n#!!block;n#convertNumberStr#0" />
+            <element signature="n#!!block;n#deleteAsset#0" />
+            <element signature="n#!!block;n#generate_assets_table#0" />
+            <element signature="n#!!block;n#groupBy#0" />
+            <element signature="n#!!block;n#calcAssetTotalValues#0" />
+          </folding>
         </state>
       </provider>
     </entry>

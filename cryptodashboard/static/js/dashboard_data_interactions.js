@@ -1,7 +1,7 @@
 // global shared data
 let coin_data;
 let user_assets;
-let currency_total_summed ;
+let currency_total_values;
 
 function getCoinData() {
     return axios.get('/dataload', { crossdomain: true })
@@ -60,15 +60,15 @@ function generate_coin_table() {
                 text = table_data[coin].name;
                 break;
               case 5:
-                if(currency_total_summed[(table_data[coin].symbol).toLowerCase()]) {
-                    text = (currency_total_summed[(table_data[coin].symbol).toLowerCase()]).toString();
+                if(currency_total_values[(table_data[coin].symbol).toLowerCase()]) {
+                    text = (currency_total_values[(table_data[coin].symbol).toLowerCase()].amount).toString();
                 } else {
                     text = '0';
                 }
                 break;
               case 6:
-                if(currency_total_summed[(table_data[coin].symbol).toLowerCase()]) {
-                    text = convertNumberStr(table_data[coin].quote.USD.price * currency_total_summed[(table_data[coin].symbol).toLowerCase()]);
+                if(currency_total_values[(table_data[coin].symbol).toLowerCase()]) {
+                    text = convertNumberStr(currency_total_values[(table_data[coin].symbol).toLowerCase()].value * currency_total_values[(table_data[coin].symbol).toLowerCase()].amount);
                 } else {
                     text = '0';
                 }
@@ -147,16 +147,22 @@ function createPortfolioPieChart() {
     Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
     Chart.defaults.global.defaultFontColor = '#858796';
 
-    console.log(currency_total_summed);
-
-    let labels = Object.keys(currency_total_summed);
+    let labels = Object.keys(currency_total_values);
+    let valuePercent = [];
+    let portfolioVal = 0;
+    for(let type in currency_total_values) {
+        portfolioVal = portfolioVal + (currency_total_values[type].amount * currency_total_values[type].value);
+    }
+    for(let type in currency_total_values) {
+        valuePercent.push((currency_total_values[type].amount * currency_total_values[type].value) / (portfolioVal/100));
+    }
     let ctx = document.getElementById("portfolioPieChart");
     let portfolioPieChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
         labels: labels,
         datasets: [{
-          data: [55, 30, 15],
+          data: valuePercent,
           backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#EBB427', '#D03627', '#9933ff'],
           hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
           hoverBorderColor: "rgba(234, 236, 244, 1)",
@@ -343,12 +349,18 @@ function calcAssetTotalValues() {
     let prototype = new Object();
     for (let assetType in groupedAssetArray) {
         let sum = 0;
+        let value = 0;
         for (let asset of groupedAssetArray[assetType]) {
             sum = sum + asset.amount;
+            for (let coin in coin_data) {
+                if(coin_data[coin].symbol.toLowerCase() == assetType) {
+                    value = coin_data[coin].quote.USD.price;
+                }
+            }
         }
-        prototype[assetType] = sum;
+        prototype[assetType] = {amount: sum, value: value};
     }
-    currency_total_summed = prototype;
+    currency_total_values = prototype;
 }
 
 async function refresh() {
