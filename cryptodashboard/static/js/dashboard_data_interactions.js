@@ -1,9 +1,10 @@
 // global shared data
-let coin_data = new Object();
-let user_assets = new Object();
+let coin_data;
+let user_assets;
+let currency_total_summed ;
 
 function getCoinData() {
-    return axios.get('http://127.0.0.1:1337/dataload')
+    return axios.get('/dataload', { crossdomain: true })
         .then(res => {
             coin_data = res.data.data;
         })
@@ -11,16 +12,16 @@ function getCoinData() {
 }
 
 function getUserAssets() {
-    return axios.get('http://127.0.0.1:1337/assetload_by_user')
+    return axios.get('/assetload_by_user', { crossdomain: true })
         .then(res => {
-            user_assets = res.data;
+            user_assets = Object.assign([], res.data);
         })
         .catch(err => console.error(err));
+
 }
 
-async function generate_coin_table() {
+function generate_coin_table() {
     // get data
-  await getCoinData();
   let table_data = coin_data;
 
   // get the reference for the body
@@ -31,7 +32,7 @@ async function generate_coin_table() {
   let tblFoot = document.createElement("tfoot");
   let tblBody = document.createElement("tbody");
   //create header and footer
-  let headers = ['#', 'Name', 'Price $', 'Change(24h)', 'Change(7d)', 'Market-Cap.', 'Circulation-Supply', 'Volume.(24h)']
+  let headers = ['#', 'Name', 'Price $', 'Change(24h)', 'Change(7d)', 'In Portfolio', 'Value', 'Market-Cap.', 'Circulation-Supply', 'Volume.(24h)']
   let headRow = document.createElement("tr");
   for (let head in headers) {
     let cell = document.createElement("th");
@@ -48,7 +49,7 @@ async function generate_coin_table() {
       // creates a table row
       let row = document.createElement("tr");
       //create table rows (change case number for order of cells)
-      for (let j = 0; j < 8; j++) {
+      for (let j = 0; j < 10; j++) {
           // path in data ['quote.USD.price', 'quote.USD.percent_change_24h', 'quote.USD.percent_change_7d'];
           let text = "";
           switch (j) {
@@ -59,12 +60,26 @@ async function generate_coin_table() {
                 text = table_data[coin].name;
                 break;
               case 5:
-                text = convertNumberStr(table_data[coin].quote.USD.market_cap);
+                if(currency_total_summed[(table_data[coin].symbol).toLowerCase()]) {
+                    text = (currency_total_summed[(table_data[coin].symbol).toLowerCase()]).toString();
+                } else {
+                    text = '0';
+                }
                 break;
               case 6:
-                text = convertNumberStr(table_data[coin].circulating_supply);
+                if(currency_total_summed[(table_data[coin].symbol).toLowerCase()]) {
+                    text = convertNumberStr(table_data[coin].quote.USD.price * currency_total_summed[(table_data[coin].symbol).toLowerCase()]);
+                } else {
+                    text = '0';
+                }
                 break;
               case 7:
+                text = convertNumberStr(table_data[coin].quote.USD.market_cap);
+                break;
+              case 8:
+                text = convertNumberStr(table_data[coin].circulating_supply);
+                break;
+              case 9:
                 text = convertNumberStr(table_data[coin].quote.USD.volume_24h);
                 break;
               case 2:
@@ -115,7 +130,7 @@ function convertNumberStr(text) {
 }
 
 function deleteAsset(assetId) {
-    axios.post('http://127.0.0.1:1337/asset/delete', {assetId})
+    axios.post('/asset/delete', {assetId})
         .then(res => {
             // update asset sum
             let sumCell = document.getElementById('sumCell');
@@ -124,6 +139,7 @@ function deleteAsset(assetId) {
             assetRow.parentNode.removeChild(assetRow);
         })
         .catch(err => console.error(err));
+    refresh();
 }
 
 function createPortfolioPieChart() {
@@ -131,14 +147,17 @@ function createPortfolioPieChart() {
     Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
     Chart.defaults.global.defaultFontColor = '#858796';
 
+    console.log(currency_total_summed);
+
+    let labels = Object.keys(currency_total_summed);
     let ctx = document.getElementById("portfolioPieChart");
     let portfolioPieChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: ["Direct", "Referral", "Social"],
+        labels: labels,
         datasets: [{
           data: [55, 30, 15],
-          backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
+          backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#EBB427', '#D03627', '#9933ff'],
           hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
           hoverBorderColor: "rgba(234, 236, 244, 1)",
         }],
@@ -156,18 +175,23 @@ function createPortfolioPieChart() {
           caretPadding: 10,
         },
         legend: {
-          display: false
+          display: true,
+          position: 'bottom',
+          align: 'center',
+          labels: {
+              boxWidth: 12,
+          }
         },
-        cutoutPercentage: 75,
+        cutoutPercentage: 70,
       },
     });
+
 }
 
-async function generate_assets_table() {
+function generate_assets_table() {
     // get data to array
-    await getUserAssets();
     let table_data = user_assets;
-    table_data = Object.assign([], table_data).reverse();
+    table_data = table_data.reverse();
 
     // get the reference for the body
     let tbl = document.getElementById("assetTable");
@@ -302,11 +326,52 @@ async function generate_assets_table() {
     tbl.appendChild(tblBody);
 }
 
+function groupBy(array, property) {
+    const groupBy = key => array =>
+      array.reduce((objectsByKeyValue, obj) => {
+        const value = obj[key];
+        objectsByKeyValue[value] = (objectsByKeyValue[value] || []).concat(obj);
+        return objectsByKeyValue;
+      }, {});
+
+    const groupByProperty = groupBy(property);
+    return groupByProperty(array)
+}
+
+function calcAssetTotalValues() {
+    let groupedAssetArray = groupBy(user_assets, "type");
+    let prototype = new Object();
+    for (let assetType in groupedAssetArray) {
+        let sum = 0;
+        for (let asset of groupedAssetArray[assetType]) {
+            sum = sum + asset.amount;
+        }
+        prototype[assetType] = sum;
+    }
+    currency_total_summed = prototype;
+}
+
+async function refresh() {
+    // get data
+    await getUserAssets();
+    await getCoinData();
+    await calcAssetTotalValues();
+    // create widgets
+    generate_assets_table();
+    generate_coin_table();
+    createPortfolioPieChart();
+}
 
 // onload start!!!
-$(document).ready(function() {
-    generate_coin_table();
+$(document).ready(async function() {
+    // get data
+    await getUserAssets();
+    await getCoinData();
+    await calcAssetTotalValues();
+    // create widgets
     generate_assets_table();
+    generate_coin_table();
+    createPortfolioPieChart();
 });
 
 

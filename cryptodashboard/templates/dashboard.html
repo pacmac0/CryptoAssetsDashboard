@@ -180,17 +180,13 @@
                             <div class="chart-pie pt-4 pb-2">
                                 <canvas id="portfolioPieChart"></canvas>
                             </div>
-                            <div class="mt-4 text-center small">
-                    <span class="mr-2">
-                      <i class="fas fa-circle text-primary"></i> Direct
-                    </span>
+                            <!--
+                            <div class="mt-4 text-center small" id="legend">
                                 <span class="mr-2">
-                      <i class="fas fa-circle text-success"></i> Social
-                    </span>
-                                <span class="mr-2">
-                      <i class="fas fa-circle text-info"></i> Referral
-                    </span>
+                                  <i class="fas fa-circle text-primary"></i> Direct
+                                </span>
                             </div>
+                            -->
                         </div>
                     </div>
                 </div>
@@ -201,7 +197,7 @@
             <div class="card shadow mb-4">
                 <div class="card-header col">
                     <h6 class="m-2 font-weight-bold text-primary ">Crypto-Stock-Prices</h6>
-                    <a onclick="tableLoad()" href="" class="btn btn-primary btn-icon-split">
+                    <a onclick="refresh()" href="" class="btn btn-primary btn-icon-split">
               <span class="icon text-white-50">
                 <i class="fas fa-redo-alt"></i>
               </span>

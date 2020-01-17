@@ -33,7 +33,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 
-coinChoices = [('btc', 'Bitcoin(BTC)'), ('eth', 'Ethereum(ETH)'), ('iota', 'IOTA(MIOTA)'), ('xrp', 'Ripple(XRP)'), ('bch', 'Bitcoin Cash(BCH)'), ('usdt', 'Tether(USDT)')]
+coinChoices = [('btc', 'Bitcoin(BTC)'), ('eth', 'Ethereum(ETH)'), ('miota', 'IOTA(MIOTA)'), ('xrp', 'Ripple(XRP)'), ('bch', 'Bitcoin Cash(BCH)'), ('usdt', 'Tether(USDT)')]
 class changeAssetsForm(FlaskForm):
     type = SelectField('Coin', choices=coinChoices, validators=[DataRequired(), AnyOf([coin[0] for coin in coinChoices])]) #change here for supported coins
     action = SelectField('Action', choices=[('buy', 'bought'), ('sell', 'sold')], validators=[DataRequired(), AnyOf(['buy', 'sell'])])
