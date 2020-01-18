@@ -102,6 +102,12 @@ function generate_coin_table() {
           }
 
           cell = document.createElement("td");
+          if(j === 5) {
+              cell.setAttribute('id', 'amount' + table_data[coin].symbol.toLowerCase());
+          }
+          if(j === 6) {
+              cell.setAttribute('id', 'value' + table_data[coin].symbol.toLowerCase());
+          }
           cellText = document.createTextNode(text);
           if(text.toString().includes('-')) {
             cell.style.color = "#D94040";
@@ -129,23 +135,22 @@ function convertNumberStr(text) {
     return convStr.split("").reverse().join("");
 }
 
-async function deleteAsset(assetId) {
-    await axios.post('/asset/delete', {assetId})
+function deleteAsset(assetId, assetType) {
+    axios.post('/asset/delete', {assetId})
         .then(res => {
-            // update asset sum
+            let coinTableAmountCell = document.getElementById('amount' + assetType);
+            let coinTableValueCell = document.getElementById('value' + assetType);
             let sumCell = document.getElementById('sumCell');
+            let totalPriceCell = document.getElementById('totalPriceCell');
             let assetRow = document.getElementById(assetId);
-            sumCell.innerHTML = (parseFloat(sumCell.innerHTML) - parseFloat(assetRow.children[1].innerHTML)).toString();
+            let newAmount = (parseFloat(sumCell.innerHTML) - parseFloat(assetRow.children[1].innerHTML)).toFixed(10);
+            sumCell.innerHTML = newAmount.toString();
+            totalPriceCell.innerHTML = (parseFloat(totalPriceCell.innerHTML) - parseFloat(assetRow.children[2].innerHTML)).toFixed(2).toString();
             assetRow.parentNode.removeChild(assetRow);
+            coinTableAmountCell.innerHTML = newAmount.toString();
+            coinTableValueCell.innerHTML = (newAmount * currency_total_values[assetType].value).toFixed(2).toString();
         })
         .catch(err => console.error(err));
-    // get data
-    await getUserAssets();
-    await getCoinData();
-    await calcAssetTotalValues();
-    // create widgets
-    generate_coin_table();
-    createPortfolioPieChart();
 }
 
 function createPortfolioPieChart() {
@@ -214,31 +219,29 @@ function generate_assets_table() {
         let choosenType = document.getElementById("type").value;
         let tableRows = tbl.querySelectorAll('tr');
         // filter by type
-        let rowCount = 1;
         tableRows.forEach(tr => {
             let rowAssetType = tr.getAttribute('value');
-
             if(rowAssetType === choosenType || rowAssetType === 'assetTableHead') {
                 tr.hidden = false;
-                if(rowAssetType === choosenType) {
-                    tr.children[0].innerHTML = (rowCount).toString();
-                    rowCount++;
-                }
             }
             else {
                 row.hidden = true;
             }
-
             tr.hidden = !(rowAssetType === choosenType || rowAssetType === 'assetTableHead');
         });
-        // recalculate sum od assets
-        let sum = 0;
+        // recalculate sum of assets
+        let sumAmount = 0;
+        let sumPrice = 0;
         table_data.forEach(function(asset, i) {
             if (asset.type == choosenType) {
-                sum = sum + asset.amount;
+                sumAmount = sumAmount + asset.amount;
+                sumPrice = sumPrice + asset.price;
             }
         });
-        document.getElementById('sumCell').innerHTML = sum;
+        console.log(sumAmount);
+        console.log(sumPrice);
+        document.getElementById('sumCell').innerHTML = sumAmount;
+        document.getElementById('totalPriceCell').innerHTML = sumPrice;
     });
 
     // creates all table elements
@@ -258,7 +261,7 @@ function generate_assets_table() {
     tblHead.appendChild(headRow);
 
     // create the summary row
-    let row = document.createElement("tr")
+    let row = document.createElement("tr");
         row.setAttribute('value', 'assetTableHead');
     headers.forEach(function(colHead, i) {
         cell = document.createElement("td");
@@ -274,7 +277,17 @@ function generate_assets_table() {
                         su = su + asset.amount;
                     }
                 });
-                cellText = document.createTextNode(su);
+                cellText = document.createTextNode(su.toFixed(10));
+                break;
+            case 2:
+                cell.setAttribute('id', 'totalPriceCell');
+                let sum = 0;
+                table_data.forEach(function(asset, i) {
+                    if (asset.type == 'btc') {
+                        sum = sum + asset.price;
+                    }
+                });
+                cellText = document.createTextNode(sum.toFixed(2));
                 break;
             case 3:
                 cellText = document.createTextNode('Today');
@@ -299,7 +312,7 @@ function generate_assets_table() {
           let text = "";
           switch (j) {
               case 1:
-                text = asset.amount;
+                text = asset.amount.toFixed(10);
                 var cellEntry = document.createTextNode(text);
                 break;
               case 2:
@@ -312,12 +325,12 @@ function generate_assets_table() {
                 break;
               case 4:
                 let delBtn = document.getElementById("assetDelBtn").cloneNode(true);
-                delBtn.onclick = function() {deleteAsset(asset.id)};
+                delBtn.onclick = function() {deleteAsset(asset.id, asset.type)};
                 delBtn.removeAttribute('hidden');
                 cellEntry = delBtn;
                 break;
               default:
-                text = "No value found!";
+                text = "";
                 var cellEntry = document.createTextNode(text);
           }
           cell.appendChild(cellEntry);
@@ -325,8 +338,6 @@ function generate_assets_table() {
       }
       if(row.getAttribute('value') === document.getElementById("type").value) {
         row.hidden = false;
-        row.children[0].innerHTML = (btcCount).toString();
-        btcCount++;
       }
       else {
           row.hidden = true;
