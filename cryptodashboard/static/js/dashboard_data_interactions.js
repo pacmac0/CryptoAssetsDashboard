@@ -129,8 +129,8 @@ function convertNumberStr(text) {
     return convStr.split("").reverse().join("");
 }
 
-function deleteAsset(assetId) {
-    axios.post('/asset/delete', {assetId})
+async function deleteAsset(assetId) {
+    await axios.post('/asset/delete', {assetId})
         .then(res => {
             // update asset sum
             let sumCell = document.getElementById('sumCell');
@@ -139,7 +139,13 @@ function deleteAsset(assetId) {
             assetRow.parentNode.removeChild(assetRow);
         })
         .catch(err => console.error(err));
-    refresh();
+    // get data
+    await getUserAssets();
+    await getCoinData();
+    await calcAssetTotalValues();
+    // create widgets
+    generate_coin_table();
+    createPortfolioPieChart();
 }
 
 function createPortfolioPieChart() {
@@ -240,7 +246,7 @@ function generate_assets_table() {
     let tblBody = document.createElement("tbody");
 
     //create header
-    let headers = ['#', 'Amount', 'Price $', 'Date/ Time', 'Actions'];
+    let headers = ['#', 'Amount', 'Buying price ($)', 'Date/ Time', 'Actions'];
     let headRow = document.createElement("tr");
         headRow.setAttribute('value', 'assetTableHead');
     headers.forEach(function(colHead, i) {
@@ -307,6 +313,7 @@ function generate_assets_table() {
               case 4:
                 let delBtn = document.getElementById("assetDelBtn").cloneNode(true);
                 delBtn.onclick = function() {deleteAsset(asset.id)};
+                delBtn.removeAttribute('hidden');
                 cellEntry = delBtn;
                 break;
               default:
